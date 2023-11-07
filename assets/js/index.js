@@ -18,8 +18,8 @@ const showModal = (message, callback) => {
         <div id="modal" class="modal card">
             <h3 class="title">${message}</h3>
             <div class="flex ac g-20">
-                <button id="closeModalButton" class="button">Close</button>
-                <button id="confirmModalButton" class="button danger-button">Delete</button>
+                <button id="closeModalButton" class="button">Закрыть</button>
+                <button id="confirmModalButton" class="button danger-button">Удалить</button>
             </div>
         </div>
     `;
@@ -51,7 +51,7 @@ const deleteSubtask = (id) => {
 const addSubtask = () => {
     const subtaskName = subtaskNameInput.value;
     if (subtaskName === "") {
-        sendErrorNotification("Subtask cannot be empty.");
+        sendErrorNotification("Название подзадачи не должно быть пустым.");
         return;
     }
 
@@ -90,16 +90,39 @@ const addSubtask = () => {
  * Add task method
  */
 const addTask = () => {
-    if (taskNameInput.value === "" || taskDateInput.value === "" || taskTimeInput.value === "") {
-        sendErrorNotification("All form fields must be filled out.");
+    const taskName = taskNameInput.value;
+    if (taskName === "") {
+        sendErrorNotification("Название задачи не должно быть пустым.");
         return;
     }
 
+    let taskTimestamp = null;
+
+    if (taskDateInput.value !== "" && taskTimeInput.value !== "") {
+        const taskISODate = taskDateInput.value + "T" + taskTimeInput.value;
+        taskTimestamp = (new Date(taskISODate)).getTime();
+    }
+
+    if (taskTimestamp !== null && taskTimestamp < Date.now()) {
+        sendErrorNotification("Дата и время должны быть не раньше сегодняшнего дня и текущего времени.");
+        return;
+    }
+
+    if (taskDateInput.value === "" && taskTimeInput.value !== "") {
+        sendErrorNotification("Вы ввели время но не выбрали дату.");
+        return;
+    }
+
+    if (taskDateInput.value !== "" && taskTimeInput.value === "") {
+        sendErrorNotification("Вы ввели дату но не выбрали время.");
+        return;
+    }
+
+
     const task = {
         id: Date.now(),
-        name: taskNameInput.value,
-        date: taskDateInput.value,
-        time: taskTimeInput.value,
+        name: taskName,
+        timestamp: taskTimestamp,
         subtasks: subtasks,
     };
 
@@ -107,7 +130,7 @@ const addTask = () => {
 
     renderForm();
 
-    sendSuccessNotification("Task created successfully.");
+    sendSuccessNotification("Задача успешно создана.");
 };
 
 /**
@@ -120,8 +143,34 @@ const deleteTask = (id) => {
         renderTasks();
     };
 
-    showModal("Are you sure you want to delete the task?", callback);
+    showModal("Вы уверены что хотите удалить задачу?", callback);
 };
+
+const formatTimestamp = (timestamp) => {
+    if (timestamp === null) {
+        return "Без даты и времени";
+    }
+
+    const currentTimestamp = Date.now();
+
+    if (currentTimestamp > timestamp) {
+        return "Просрочено";
+    }
+
+    const DAY = 86400 * 1000;
+
+    if (timestamp - currentTimestamp <= DAY) {
+        return "Сегодня";
+    }
+
+    if (timestamp - currentTimestamp > DAY && timestamp - currentTimestamp <= DAY * 2) {
+        return "Завтра";
+    }
+
+    const daysLeft = Math.floor((timestamp - currentTimestamp) / DAY);
+
+    return `Через ${daysLeft} дней(я)`;
+}
 
 /**
  * Render subtask list method
@@ -161,9 +210,9 @@ const renderTasks = () => {
         <div class="flex col g-20">
             <div class="flex col g-20">
                 <div class="flex sb wrap g-20">
-                    <h3 class="title">Tasks List</h3>
+                    <h3 class="title">Список задач</h3>
                     <button id="openFormButton" class="button">
-                        Open Form
+                        Открыть форму
                     </button
                 </div>
             </div>
@@ -186,6 +235,7 @@ const renderTasks = () => {
                     <input class="checkbox" type="checkbox">
                     <p>${task.name}</p>
                 </div>
+                <p>${formatTimestamp(task.timestamp)}</p>
                 <button data-id="${task.id}" id="deleteTaskButton" class="button danger-button icon-button">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><g>
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></g>
@@ -210,40 +260,40 @@ const renderForm = () => {
         <div id="form" class="form">
             <div class="flex sb wrap g-20">
                 <h3 class="title">
-                    Create a new task
+                    Создать новую задачу
                 </h3>
                 <button id="openTasksButton" class="button">
-                    Open Tasks
+                    Открыть задачи
                 </button>
             </div>
 
             <div class="input-group">
-                <label>Name</label>
+                <label>Название</label>
                 <input id="taskNameInput" type="text" class="input">
             </div>
             <div class="input-group">
-                <label>Deadline Date</label>
+                <label>Дата</label>
                 <input id="taskDateInput" type="date" class="input">
             </div>
             <div class="input-group">
-                <label>Deadline Time</label>
+                <label>Время</label>
                 <input id="taskTimeInput" type="time" class="input">
             </div>
 
             <div class="flex g-20 ae">
                 <div class="input-group w-max">
-                    <label>Subtask</label>
+                    <label>Название подзадачи</label>
                     <input id="subtaskNameInput" type="text" class="input">
                 </div>
                 <button id="addSubtaskButton" class="button">
-                    Add
+                    Добавить
                 </button>
             </div>
 
             <ul id="subtasksList" class="list"></ul>
 
             <button id="addTaskButton" type="submit" class="button">
-                Create
+                Создать задачу
             </button>
         </div>
     `;

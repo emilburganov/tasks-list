@@ -1,5 +1,6 @@
 :root {
-    --accent-color: #645ff3;
+    --primary-color: #645ff3;
+    --secondary-color: #6c757d;
     --danger-color: #dc3545;
     --success-color: #198754;
 }
@@ -76,7 +77,7 @@ body {
 
 .card {
     padding: 20px;
-    border-radius: 16px;
+    border-radius: 8px;
     background-color: white;
 }
 
@@ -103,7 +104,7 @@ body {
 }
 
 .input:focus {
-    border: 1px solid var(--accent-color);
+    border: 1px solid var(--primary-color);
     outline: 3px solid #645ff366;
 }
 
@@ -114,10 +115,10 @@ body {
 }
 
 .button {
-    background-color: var(--accent-color);
+    background-color: var(--primary-color);
     color: white;
     padding: 12px 16px;
-    border: 2px solid var(--accent-color);
+    border: 2px solid var(--primary-color);
     border-radius: 8px;
     outline: none;
     font-weight: 500;
@@ -133,6 +134,11 @@ body {
 .danger-button {
     background-color: var(--danger-color);
     border-color: var(--danger-color);
+}
+
+.secondary-button {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
 }
 
 .icon-button {
@@ -194,15 +200,36 @@ body {
     }
 }
 
+@keyframes slideIn2 {
+    0% {
+        transform: translateX(150%);
+    }
+
+    10%,
+    90% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
 /* Tasks */
 .task {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    border: 2px solid var(--accent-color);
+    border: 2px solid var(--primary-color);
     border-radius: 8px;
     padding: 16px;
+
+}
+
+.task.leave {
+    transform: translateX(0%);
+    animation: slideIn2 4s ease-in-out;
 }
 
 /* Modal */
@@ -224,5 +251,12 @@ body {
 }
 
 .modal {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
+.modal > h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
 }

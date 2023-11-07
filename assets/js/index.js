@@ -6,28 +6,98 @@ let subtasks = [];
  */
 const closeModal = () => {
     modalBox.classList.remove("active");
-}
+};
 
 /**
  * Show modal method
  */
-const showModal = (message) => {
+const showModal = (message, callback) => {
     modalBox.classList.add("active");
 
     modalBox.innerHTML = `
-        <div class="modal">
-            <div class="card">
-               <h3>${message}</h3>
-               <button class="button">Confirm</button>
-               <button id="exitModalButton" class="button">Exit</button>
+        <div id="modal" class="modal card">
+            <h3 class="title">${message}</h3>
+            <div class="flex ac g-20">
+                <button id="closeModalButton" class="button">Close</button>
+                <button id="confirmModalButton" class="button danger-button">Delete</button>
             </div>
         </div>
     `;
 
-    exitModalButton.addEventListener("click", closeModal);
+    modal.addEventListener("click", (event) => event.stopPropagation());
+
+    confirmModalButton.addEventListener("click", () => {
+        callback();
+        closeModal();
+    });
+
+    closeModalButton.addEventListener("click", closeModal);
 };
 
+modalBox.addEventListener("click", closeModal);
 
+/**
+ * Add subtask method
+ */
+const addSubtask = () => {
+    const subtaskName = subtaskNameInput.value;
+    if (subtaskName === "") {
+        sendErrorNotification("Subtask cannot be empty.");
+        return;
+    }
+
+    subtasks.push({
+        id: Date.now(),
+        name: subtaskName,
+    });
+
+    subtasksList.insertAdjacentHTML("beforeend", `
+        <li>
+            <p class="w-max">
+                ${subtaskName}
+            </p>
+        </li>  
+    `);
+
+    subtaskNameInput.value = "";
+};
+
+/**
+ * Add task method
+ */
+const addTask = () => {
+    if (taskNameInput.value === "" || taskDateInput.value === "" || taskTimeInput.value === "") {
+        sendErrorNotification("All form fields must be filled out.");
+        return;
+    }
+
+    const task = {
+        id: Date.now(),
+        name: taskNameInput.value,
+        date: taskDateInput.value,
+        time: taskTimeInput.value,
+        subtasks: subtasks,
+    };
+
+    tasks.push(task);
+
+    renderForm();
+
+    sendSuccessNotification("Task created successfully.");
+};
+
+/**
+ * Delete task method
+ * @param id
+ */
+const deleteTask = (id) => {
+    const callback = () => {
+        tasks = tasks.filter((task) => task.id !== id);
+        renderTasks();
+    };
+
+    showModal("Are you sure you want to delete the task?", callback);
+};
 
 /**
  * Render task list method
@@ -67,12 +137,6 @@ const renderTasks = () => {
             </div>
         `);
     });
-
-    const deleteTask = (id) => {
-        showModal("Are you sure you want to delete the task?");
-        tasks = tasks.filter((task) => task.id !== id);
-        renderTasks();
-    };
 
     const deleteTaskButtons = document.querySelectorAll("#deleteTaskButton");
     deleteTaskButtons.forEach((button) => {
@@ -127,10 +191,14 @@ const renderForm = () => {
         </div>
     `;
 
+    addSubtaskButton.addEventListener("click", addSubtask);
+    addTaskButton.addEventListener("click", addTask);
     openTasksButton.addEventListener("click", renderTasks);
 };
 
 renderForm();
+
+openTasksButton.addEventListener("click", renderTasks);
 
 /**
  * Send error notification method
@@ -167,60 +235,6 @@ const sendSuccessNotification = (message) => {
         notificationBox.removeChild(notification);
     }, 4000);
 };
-
-/**
- * Add subtask method
- */
-const addSubtask = () => {
-    const subtaskName = subtaskNameInput.value;
-    if (subtaskName === "") {
-        sendErrorNotification("Subtask cannot be empty.");
-        return;
-    }
-
-    subtasks.push({
-        id: Date.now(),
-        name: subtaskName,
-    });
-
-    subtasksList.insertAdjacentHTML("beforeend", `
-        <li>
-            <p class="w-max">
-                ${subtaskName}
-            </p>
-        </li>  
-    `);
-
-    subtaskNameInput.value = "";
-};
-
-addSubtaskButton.addEventListener("click", addSubtask);
-
-/**
- * Add task method
- */
-const addTask = () => {
-    if (taskNameInput.value === "" || taskDateInput.value === "" || taskTimeInput.value === "") {
-        sendErrorNotification("All form fields must be filled out.");
-        return;
-    }
-
-    const task = {
-        id: Date.now(),
-        name: taskNameInput.value,
-        date: taskDateInput.value,
-        time: taskTimeInput.value,
-        subtasks: subtasks,
-    };
-
-    tasks.push(task);
-
-    sendSuccessNotification("Task created successfully.");
-};
-
-addTaskButton.addEventListener("click", addTask);
-
-openTasksButton.addEventListener("click", renderTasks);
 
 /**
  * Save tasks to localstorage

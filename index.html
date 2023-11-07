@@ -10,35 +10,12 @@
 </head>
 <body>
 <div class="container centered-container">
-    <div class="card w-600">
-        <form id="form" class="form">
-            <h3 class="title">
-                Create a new todo
-            </h3>
-            <div class="input-group">
-                <label>Name</label>
-                <input type="text" class="input">
-            </div>
-            <div class="input-group">
-                <label>Deadline</label>
-                <input type="date" class="input">
-            </div>
-            <ol id="subtasksList" class="list"></ol>
-            <div class="flex g-20">
-                <button id="addSubtaskButton" class="button">
-                    Add a subtask
-                </button>
-                <button id="addTaskButton" type="submit" class="button">
-                    Create
-                </button>
-            </div>
-        </form>
-    </div>
+    <div id="root" class="card w-600"></div>
 </div>
 
-<div id="notificationBox" class="notification-box">
+<div id="notificationBox" class="notification-box"></div>
+<div id="modalBox" class="modal-box"></div>
 
-</div>
 <script src="assets/js/index.js"></script>
 </body>
 </html>

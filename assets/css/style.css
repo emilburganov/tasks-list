@@ -1,6 +1,7 @@
 :root {
     --accent-color: #645ff3;
-    --danger-color: #ff2444;
+    --danger-color: #dc3545;
+    --success-color: #198754;
 }
 
 /* Reset */
@@ -40,8 +41,20 @@ body {
     align-items: center;
 }
 
+.ae {
+    align-items: flex-end;
+}
+
 .jc {
     justify-content: center;
+}
+
+.sb {
+    justify-content: space-between;
+}
+
+.col {
+    flex-direction: column;
 }
 
 .g-20 {
@@ -50,6 +63,10 @@ body {
 
 .w-600 {
     max-width: 600px;
+    width: 100%;
+}
+
+.w-max {
     width: 100%;
 }
 
@@ -113,6 +130,20 @@ body {
     opacity: .9;
 }
 
+.danger-button {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+}
+
 /* Notifications */
 .notification-box {
     position: fixed;
@@ -121,6 +152,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    pointer-events: none;
 }
 
 .notification {
@@ -130,7 +162,7 @@ body {
     gap: 16px;
     padding: 20px 16px;
     border-radius: 8px;
-    background-color: #ffbec9;
+    background-color: rgba(220, 53, 69, 0.4);
     color: var(--danger-color);
     border: 1px solid var(--danger-color);
     transform: translateX(150%);
@@ -139,6 +171,12 @@ body {
 
 .notification > svg {
     margin-top: 2px;
+}
+
+.notification.success {
+    background-color: rgba(25, 135, 84, 0.4);
+    color: var(--success-color);
+    border: 1px solid var(--success-color);
 }
 
 @keyframes slideIn {
@@ -154,4 +192,37 @@ body {
     100% {
         transform: translateX(100%);
     }
+}
+
+/* Tasks */
+.task {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+/* Modal */
+.modal-box {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, .5);
+}
+
+.modal-box.active {
+    display: flex;
+}
+
+.modal {
+
 }

@@ -37,6 +37,15 @@ const showModal = (message, callback) => {
 modalBox.addEventListener("click", closeModal);
 
 /**
+ * Delete subtask method
+ * @param id
+ */
+const deleteSubtask = (id) => {
+    subtasks = subtasks.filter((subtask) => subtask.id !== id);
+    renderSubtasks();
+};
+
+/**
  * Add subtask method
  */
 const addSubtask = () => {
@@ -46,20 +55,35 @@ const addSubtask = () => {
         return;
     }
 
+    const id = Date.now();
+
     subtasks.push({
-        id: Date.now(),
+        id,
         name: subtaskName,
     });
 
     subtasksList.insertAdjacentHTML("beforeend", `
         <li>
-            <p class="w-max">
-                ${subtaskName}
-            </p>
+            <div class="flex ac g-20">
+                <p class="w-max">
+                    ${subtaskName}
+                </p>
+                <button data-id="${id}" id="deleteSubtaskButton" class="button danger-button icon-button">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><g>
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></g>
+                    </svg>
+                </button>
+            </div>
         </li>  
     `);
 
     subtaskNameInput.value = "";
+
+    const deleteSubtaskButtons = document.querySelectorAll("#deleteSubtaskButton");
+    deleteSubtaskButtons.forEach((button) => {
+        const id = Number(button.dataset.id);
+        button.addEventListener("click", () => deleteSubtask(id));
+    });
 };
 
 /**
@@ -100,13 +124,43 @@ const deleteTask = (id) => {
 };
 
 /**
+ * Render subtask list method
+ */
+const renderSubtasks = () => {
+    subtasksList.innerHTML = "";
+
+    subtasks.forEach((subtask) => {
+        subtasksList.insertAdjacentHTML("beforeend", `
+            <li>
+                <div class="flex ac g-20">
+                    <p class="w-max">
+                        ${subtask.name}
+                    </p>
+                    <button data-id="${subtask.id}" id="deleteSubtaskButton" class="button danger-button icon-button">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><g>
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></g>
+                        </svg>
+                    </button>
+                </div>
+            </li>  
+        `);
+    });
+
+    const deleteSubtaskButtons = document.querySelectorAll("#deleteSubtaskButton");
+    deleteSubtaskButtons.forEach((button) => {
+        const id = Number(button.dataset.id);
+        button.addEventListener("click", () => deleteSubtask(id));
+    });
+};
+
+/**
  * Render task list method
  */
 const renderTasks = () => {
     root.innerHTML = `
         <div class="flex col g-20">
             <div class="flex col g-20">
-                <div class="flex sb ac">
+                <div class="flex sb wrap g-20">
                     <h3 class="title">Tasks List</h3>
                     <button id="openFormButton" class="button">
                         Open Form
@@ -116,7 +170,7 @@ const renderTasks = () => {
             
             <input type="search" class="input w-max">
 
-            <div id="tasksList" class="flex col g-20"></div>
+            <div id="tasksList" class="flex col g-20 "></div>
         </div>
     `;
 
@@ -128,7 +182,10 @@ const renderTasks = () => {
     tasks.forEach((task) => {
         tasksList.insertAdjacentHTML("beforeend", `
             <div class="task">
-                <p>${task.id}. ${task.name}</p>
+                <div class="flex ac g-20">
+                    <input class="checkbox" type="checkbox">
+                    <p>${task.name}</p>
+                </div>
                 <button data-id="${task.id}" id="deleteTaskButton" class="button danger-button icon-button">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><g>
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></g>
@@ -151,7 +208,7 @@ const renderTasks = () => {
 const renderForm = () => {
     root.innerHTML = `
         <div id="form" class="form">
-            <div class="flex sb">
+            <div class="flex sb wrap g-20">
                 <h3 class="title">
                     Create a new task
                 </h3>
@@ -183,7 +240,7 @@ const renderForm = () => {
                 </button>
             </div>
 
-            <ol id="subtasksList" class="list"></ol>
+            <ul id="subtasksList" class="list"></ul>
 
             <button id="addTaskButton" type="submit" class="button">
                 Create

@@ -193,7 +193,7 @@ hr {
     gap: 16px;
     padding: 20px 16px;
     border-radius: 8px;
-    background-color: #DC354566;
+    background-color: #eea8b0;
     color: var(--danger-color);
     border: 1px solid var(--danger-color);
     transform: translateX(150%);
@@ -205,7 +205,7 @@ hr {
 }
 
 .notification.success {
-    background-color: #19875466;
+    background-color: #acecce;
     color: var(--success-color);
     border: 1px solid var(--success-color);
 }

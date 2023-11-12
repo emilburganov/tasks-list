@@ -76,11 +76,15 @@ const setCompletedSubTask = (taskId, subtaskId, checkbox) => {
     subtask.completed = !subtask.completed;
 
     if (subtask.completed) {
-        checkbox.checked = "checked";
         sendSuccessNotification("Подзадача отмечена как выполненная.");
+        checkbox.setAttribute("checked", "checked");
     } else {
-        task.completed = !task.completed;
         sendSuccessNotification("Подзадача отмечена как невыполненная.");
+        checkbox.removeAttribute("checked");
+    }
+
+    if (task.subtasks.find((subtask) => subtask.completed === false)) {
+        task.completed = false;
     }
 
     renderTasks();
@@ -96,9 +100,9 @@ const deleteSubtask = (id) => {
 };
 
 /**
- * Add subtask method
+ * Add subtask to add task form method
  */
-const addSubtask = () => {
+const addSubtaskToAddForm = () => {
     const subtaskName = subtaskNameInput.value;
     if (subtaskName === "") {
         sendErrorNotification("Название подзадачи не должно быть пустым.");
@@ -115,10 +119,12 @@ const addSubtask = () => {
 
     subtasksList.insertAdjacentHTML("beforeend", `
         <li>
-            <div class="flex ac g-20">
-                <p class="w-max">
-                    ${subtaskName}
-                </p>
+            <div class="flex ac g-20 sb">
+                <div class="flex ac g-20">
+                    <p>
+                        ${subtaskName}
+                    </p>
+                </div>
                 <button data-id="${id}" id="deleteSubtaskButton" class="button danger-button icon-button">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><g>
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></g>
@@ -134,6 +140,53 @@ const addSubtask = () => {
     deleteSubtaskButtons.forEach((button) => {
         const id = Number(button.dataset.id);
         button.addEventListener("click", () => deleteSubtask(id));
+    });
+};
+
+/**
+ * Add subtask to update task form method
+ */
+const addSubtaskToUpdateForm = (task) => {
+    const subtaskName = subtaskNameInput.value;
+    if (subtaskName === "") {
+        sendErrorNotification("Название подзадачи не должно быть пустым.");
+        return;
+    }
+
+    const id = Date.now();
+
+    task.subtasks.push({
+        id,
+        name: subtaskName,
+        completed: false,
+    });
+
+    subtasksList.insertAdjacentHTML("beforeend", `
+        <li>
+            <div class="flex ac g-20 sb">
+                <div class="flex ac g-20">
+                    <p>
+                        ${subtaskName}
+                    </p>
+                </div>
+                <button data-id="${id}" id="deleteSubtaskButton" class="button danger-button icon-button">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><g>
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></g>
+                    </svg>
+                </button>
+            </div>
+        </li>  
+    `);
+
+    subtaskNameInput.value = "";
+
+    const deleteSubtaskButtons = document.querySelectorAll("#deleteSubtaskButton");
+    deleteSubtaskButtons.forEach((button) => {
+        const id = Number(button.dataset.id);
+        button.addEventListener("click", () => {
+            task.subtasks = task.subtasks.filter((subtask) => subtask.id !== id);
+            renderUpdateForm(task.id);
+        });
     });
 };
 
@@ -169,13 +222,12 @@ const addTask = () => {
         return;
     }
 
-
     const task = {
         id: Date.now(),
         name: taskName,
         completed: false,
-        date: taskDateInput,
-        time: taskTimeInput,
+        date: taskDateInput.value,
+        time: taskTimeInput.value,
         timestamp: taskTimestamp,
         subtasks: subtasks,
     };
@@ -302,7 +354,7 @@ const renderTasks = () => {
         _tasks = tasks.filter((task) => task.completed === true);
     }
 
-    _tasks.forEach((task) => {
+    _tasks.forEach((task, index) => {
         tasksList.insertAdjacentHTML("beforeend", `
             <div class="task">
                 <div class="flex ac sb g-20 wrap">
@@ -338,25 +390,25 @@ const renderTasks = () => {
         `);
 
         if (!!task.subtasks.length) {
-            const subtasksList = document.querySelector("#taskSubtasksList");
+            const subtasksList = document.querySelectorAll("#taskSubtasksList")[index];
             subtasksList.innerHTML = "";
 
             task.subtasks.forEach((subtask) => {
                 subtasksList.insertAdjacentHTML("beforeend", `
-                <li>
-                    <div class="flex ac g-20">
-                        <input
-                            ${subtask.completed && "checked"}
-                            data-taskId="${task.id}"
-                            data-subtaskId="${subtask.id}"
-                            id="setCompletedSubtaskCheckbox" 
-                            class="checkbox" 
-                            type="checkbox"
-                        >
-                        <p>${subtask.name}</p>
-                    </div>
-                </li>  
-            `);
+                    <li>
+                        <div class="flex ac g-20">
+                            <input
+                                ${subtask.completed && "checked"}
+                                data-taskId="${task.id}"
+                                data-subtaskId="${subtask.id}"
+                                id="setCompletedSubtaskCheckbox" 
+                                class="checkbox" 
+                                type="checkbox"
+                            >
+                            <p>${subtask.name}</p>
+                        </div>
+                    </li>  
+                `);
             });
         }
     });
@@ -448,7 +500,7 @@ const renderAddForm = () => {
         </div>
     `;
 
-    addSubtaskButton.addEventListener("click", addSubtask);
+    addSubtaskButton.addEventListener("click", addSubtaskToAddForm);
     addTaskButton.addEventListener("click", addTask);
     openTasksButton.addEventListener("click", renderTasks);
 };
@@ -469,6 +521,9 @@ const renderUpdateForm = (id) => {
                 <h3 class="title">
                     Изменить задачу
                 </h3>
+                <button id="openTasksButton" class="button">
+                    Открыть задачи
+                </button>
             </div>
 
             <div class="input-group">
@@ -495,16 +550,42 @@ const renderUpdateForm = (id) => {
             </div>
 
             <ul id="subtasksList" class="list"></ul>
-
-            <button id="addTaskButton" type="submit" class="button">
-                Создать задачу
-            </button>
         </div>
     `;
 
-    // addSubtaskButton.addEventListener("click", addSubtask);
-    // addTaskButton.addEventListener("click", addTask);
-    // openTasksButton.addEventListener("click", renderTasks);
+    if (!!task.subtasks.length) {
+        const subtasksList = document.querySelector("#subtasksList");
+        subtasksList.innerHTML = "";
+
+        task.subtasks.forEach((subtask) => {
+            subtasksList.insertAdjacentHTML("beforeend", `
+                <li>
+                    <div class="flex ac g-20 sb">
+                        <div class="flex ac g-20">
+                            <p>${subtask.name}</p>
+                        </div>
+                        <button data-id="${subtask.id}" id="deleteSubtaskButton" class="button danger-button icon-button">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><g>
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></g>
+                            </svg>
+                        </button>
+                    </div>
+                </li>  
+            `);
+        });
+    }
+
+    const deleteSubtaskButtons = document.querySelectorAll("#deleteSubtaskButton");
+    deleteSubtaskButtons.forEach((button) => {
+        const id = Number(button.dataset.id);
+        button.addEventListener("click", () => {
+            task.subtasks = task.subtasks.filter((subtask) => subtask.id !== id);
+            renderUpdateForm(task.id);
+        });
+    });
+
+    addSubtaskButton.addEventListener("click", () => addSubtaskToUpdateForm(task));
+    openTasksButton.addEventListener("click", renderTasks);
 };
 
 /**

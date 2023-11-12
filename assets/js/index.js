@@ -161,6 +161,10 @@ const addSubtaskToUpdateForm = (task) => {
         completed: false,
     });
 
+    if (task.subtasks.find((subtask) => subtask.completed === false)) {
+        task.completed = false;
+    }
+
     subtasksList.insertAdjacentHTML("beforeend", `
         <li>
             <div class="flex ac g-20 sb">
@@ -513,7 +517,7 @@ openTasksButton.addEventListener("click", renderTasks);
  * Render update task form method
  */
 const renderUpdateForm = (id) => {
-    const task = tasks.find((task) => task.id === id);
+    let task = tasks.find((task) => task.id === id);
 
     root.innerHTML = `
         <div id="form" class="form">
@@ -552,6 +556,70 @@ const renderUpdateForm = (id) => {
             <ul id="subtasksList" class="list"></ul>
         </div>
     `;
+
+    taskDateInput.addEventListener("change", () => {
+        let taskTimestamp = null;
+
+        if (taskDateInput.value !== "" && taskTimeInput.value !== "") {
+            const taskISODate = taskDateInput.value + "T" + taskTimeInput.value;
+            taskTimestamp = (new Date(taskISODate)).getTime();
+        }
+
+        if (taskTimestamp !== null && taskTimestamp < Date.now()) {
+            sendErrorNotification("Дата и время должны быть не раньше сегодняшнего дня и текущего времени.");
+            return;
+        }
+
+        if (taskDateInput.value === "" && taskTimeInput.value !== "") {
+            sendErrorNotification("Вы ввели время но не выбрали дату.");
+            return;
+        }
+
+        if (taskDateInput.value !== "" && taskTimeInput.value === "") {
+            sendErrorNotification("Вы ввели дату но не выбрали время.");
+            return;
+        }
+
+        task.date = taskDateInput.value;
+        task.timestamp = taskTimestamp;
+    });
+
+    taskTimeInput.addEventListener("change", () => {
+        let taskTimestamp = null;
+
+        if (taskDateInput.value !== "" && taskTimeInput.value !== "") {
+            const taskISODate = taskDateInput.value + "T" + taskTimeInput.value;
+            taskTimestamp = (new Date(taskISODate)).getTime();
+        }
+
+        if (taskTimestamp !== null && taskTimestamp < Date.now()) {
+            sendErrorNotification("Дата и время должны быть не раньше сегодняшнего дня и текущего времени.");
+            return;
+        }
+
+        if (taskDateInput.value === "" && taskTimeInput.value !== "") {
+            sendErrorNotification("Вы ввели время но не выбрали дату.");
+            return;
+        }
+
+        if (taskDateInput.value !== "" && taskTimeInput.value === "") {
+            sendErrorNotification("Вы ввели дату но не выбрали время.");
+            return;
+        }
+
+        task.time = taskTimeInput.value;
+        task.timestamp = taskTimestamp;
+    });
+
+    taskNameInput.addEventListener("change", () => {
+        const taskName = taskNameInput.value;
+        if (taskName === "") {
+            sendErrorNotification("Название задачи не должно быть пустым.");
+            return;
+        }
+
+        task.name = taskName;
+    })
 
     if (!!task.subtasks.length) {
         const subtasksList = document.querySelector("#subtasksList");

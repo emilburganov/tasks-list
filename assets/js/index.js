@@ -2,6 +2,63 @@ let tasks = JSON.parse(localStorage.getItem("tasks")) ?? [];
 let subtasks = [];
 
 let currentTab = "Активные";
+let filteredTasks = [];
+let filterQuery = "";
+
+/**
+ * Highlight filtered text in tasks
+ */
+const highlightFiltered = () => {
+    const filterKeys = filterQuery.split(" ");
+
+    filterKeys.forEach((filterKey) => {
+        tasks.forEach((task) => {
+            const taskFilterKeys = task.filter.split(" ");
+
+            const isMatch = taskFilterKeys.includes(filterKey) && !task.completed;
+
+            const searchAreas = document.querySelectorAll("#tasksList p")
+
+            if (isMatch) {
+                searchAreas.forEach((searchArea) => {
+                    const regExp = new RegExp(`${filterKey}`, "g");
+                    searchArea.innerHTML = (searchArea.innerHTML).replace(regExp, `<mark>${filterKey}</mark>`);
+                });
+            }
+        });
+    });
+}
+
+/**
+ * Filter tasks method
+ */
+const filter = () => {
+    const filterKeys = filterQuery.split(" ");
+
+    filterKeys.forEach((filterKey) => {
+        filteredTasks = tasks.filter((task) => {
+            const taskFilterKeys = task.filter.split(" ");
+
+            const isMatch = taskFilterKeys.includes(filterKey) && !task.completed;
+
+            const searchAreas = document.querySelectorAll("#tasksList p")
+
+            if (isMatch) {
+                searchAreas.forEach((searchArea) => {
+                    const regExp = new RegExp(`${filterKey}`, "g");
+                    searchArea.innerHTML = (searchArea.innerHTML).replace(regExp, `<mark>${filterKey}</mark>`);
+                });
+            }
+
+            return isMatch;
+        });
+        if (filteredTasks === []) {
+            return false;
+        }
+    });
+
+    renderTasks();
+}
 
 /**
  * Close modal method
@@ -112,9 +169,7 @@ const addSubtaskToAddForm = () => {
     const id = Date.now();
 
     subtasks.push({
-        id,
-        name: subtaskName,
-        completed: false,
+        id, name: subtaskName, completed: false,
     });
 
     subtasksList.insertAdjacentHTML("beforeend", `
@@ -156,9 +211,7 @@ const addSubtaskToUpdateForm = (task) => {
     const id = Date.now();
 
     task.subtasks.push({
-        id,
-        name: subtaskName,
-        completed: false,
+        id, name: subtaskName, completed: false,
     });
 
     if (task.subtasks.find((subtask) => subtask.completed === false)) {
@@ -236,6 +289,35 @@ const addTask = () => {
         subtasks: subtasks,
     };
 
+    let filterDate = task.date.split("-");
+    [filterDate[0], filterDate[2]] = [filterDate[2], filterDate[0]];
+    filterDate = filterDate.join(".");
+
+    let shortDate = "";
+    if (filterDate[0] === "0") {
+        shortDate = filterDate.slice(1)
+    }
+
+    let shortTime = "";
+    if (task.time[0] === "0") {
+        shortTime = task.time.slice(1)
+    }
+
+    task.filter = `${task.name} ${filterDate} ${task.time}`;
+    task.displayDatetime = `${filterDate} ${task.time}`
+
+    if (shortDate) {
+        task.filter += ` ${shortDate}`;
+    }
+
+    if (shortTime) {
+        task.filter += ` ${shortTime}`;
+    }
+
+    task.subtasks.forEach((subtask) => {
+        task.filter += ` ${subtask.name}`;
+    })
+
     tasks.push(task);
 
     renderAddForm();
@@ -298,7 +380,7 @@ const renderSubtasks = () => {
             <li>
                 <div class="flex ac g-20">
                     <p class="w-max">
-                        ${subtask.name}
+                        <span id="hightlight">${subtask.name}</span>
                     </p>
                     <button data-id="${subtask.id}" id="deleteSubtaskButton" class="button danger-button icon-button">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><g>
@@ -336,11 +418,22 @@ const renderTasks = () => {
                 </div>
             </div>
 
-            <input type="search" class="input w-max">
+            <input 
+                value="${filterQuery}"
+                id="filterInput"
+                type="search" 
+                class="input w-max"
+            >
 
             <div id="tasksList" class="flex col g-20"></div>
         </div>
     `;
+
+    if (filterQuery) {
+        filterInput.focus();
+        filterInput.value = "";
+        filterInput.value = filterQuery;
+    }
 
     const openFormButton = document.querySelector("#openFormButton");
     openFormButton.addEventListener("click", renderAddForm);
@@ -348,6 +441,7 @@ const renderTasks = () => {
     const tasksList = document.querySelector("#tasksList");
 
     let _tasks;
+
     if (currentTab === "Активные") {
         const activeTab = document.querySelectorAll(".tab")[0];
         activeTab.classList.add("active");
@@ -356,6 +450,10 @@ const renderTasks = () => {
         const completedTab = document.querySelectorAll(".tab")[1];
         completedTab.classList.add("active");
         _tasks = tasks.filter((task) => task.completed === true);
+    }
+
+    if (filterQuery && currentTab === "Активные") {
+        _tasks = filteredTasks
     }
 
     _tasks.forEach((task, index) => {
@@ -372,7 +470,10 @@ const renderTasks = () => {
                         >
                         <p>${task.name}</p>
                     </div>
-                    <p>${formatTimestamp(task.timestamp)}</p>
+                    <div class="flex col g-10">
+                        <p>${task.displayDatetime}</p>
+                        <p>${formatTimestamp(task.timestamp)}</p>
+                    </div>
                     <div class="flex ac g-20">
                         <button data-id="${task.id}" id="updateTaskButton" class="button warning-button icon-button">
                            <svg width="16" height="16" viewBox="0 0 512 512">
@@ -417,6 +518,8 @@ const renderTasks = () => {
         }
     });
 
+    highlightFiltered();
+
     const setCompletedSubtaskCheckboxes = document.querySelectorAll("#setCompletedSubtaskCheckbox");
     setCompletedSubtaskCheckboxes.forEach((checkbox) => {
         const taskId = Number(checkbox.dataset.taskid);
@@ -455,6 +558,11 @@ const renderTasks = () => {
             currentTab = tab.textContent;
             renderTasks();
         });
+    });
+
+    filterInput.addEventListener("input", () => {
+        filterQuery = filterInput.value;
+        filter();
     });
 };
 

@@ -191,6 +191,7 @@ hr {
 }
 
 .notification {
+    margin-left: 20px;
     min-width: 200px;
     display: flex;
     align-items: center;

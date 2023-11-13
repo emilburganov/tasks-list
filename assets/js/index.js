@@ -259,9 +259,48 @@ const addTask = () => {
 
     let taskTimestamp = null;
 
+    const task = {
+        id: Date.now(),
+        name: taskName,
+        completed: false,
+        date: taskDateInput.value,
+        time: taskTimeInput.value,
+        timestamp: taskTimestamp,
+        subtasks: subtasks,
+    };
+
+    task.filter = `${task.name}`;
+
     if (taskDateInput.value !== "" && taskTimeInput.value !== "") {
         const taskISODate = taskDateInput.value + "T" + taskTimeInput.value;
         taskTimestamp = (new Date(taskISODate)).getTime();
+
+        let filterDate = task.date.split("-");
+        [filterDate[0], filterDate[2]] = [filterDate[2], filterDate[0]];
+        filterDate = filterDate.join(".");
+
+        let shortDate = "";
+        if (filterDate[0] === "0") {
+            shortDate = filterDate.slice(1)
+        }
+
+        let shortTime = "";
+        if (task.time[0] === "0") {
+            shortTime = task.time.slice(1)
+        }
+
+        task.filter += ` ${filterDate} ${task.time}`;
+        task.displayDatetime = `${filterDate} ${task.time}`
+
+        if (shortDate) {
+            task.filter += ` ${shortDate}`;
+        }
+
+        if (shortTime) {
+            task.filter += ` ${shortTime}`;
+        }
+    } else {
+        task.displayDatetime = ""
     }
 
     if (taskTimestamp !== null && taskTimestamp < Date.now()) {
@@ -277,41 +316,6 @@ const addTask = () => {
     if (taskDateInput.value !== "" && taskTimeInput.value === "") {
         sendErrorNotification("Вы ввели дату но не выбрали время.");
         return;
-    }
-
-    const task = {
-        id: Date.now(),
-        name: taskName,
-        completed: false,
-        date: taskDateInput.value,
-        time: taskTimeInput.value,
-        timestamp: taskTimestamp,
-        subtasks: subtasks,
-    };
-
-    let filterDate = task.date.split("-");
-    [filterDate[0], filterDate[2]] = [filterDate[2], filterDate[0]];
-    filterDate = filterDate.join(".");
-
-    let shortDate = "";
-    if (filterDate[0] === "0") {
-        shortDate = filterDate.slice(1)
-    }
-
-    let shortTime = "";
-    if (task.time[0] === "0") {
-        shortTime = task.time.slice(1)
-    }
-
-    task.filter = `${task.name} ${filterDate} ${task.time}`;
-    task.displayDatetime = `${filterDate} ${task.time}`
-
-    if (shortDate) {
-        task.filter += ` ${shortDate}`;
-    }
-
-    if (shortTime) {
-        task.filter += ` ${shortTime}`;
     }
 
     task.subtasks.forEach((subtask) => {
@@ -471,7 +475,7 @@ const renderTasks = () => {
                         <p>${task.name}</p>
                     </div>
                     <div class="flex col g-10">
-                        <p>${task.displayDatetime}</p>
+                        <p id="taskDisplayName">${task.displayDatetime}</p>
                         <p>${formatTimestamp(task.timestamp)}</p>
                     </div>
                     <div class="flex ac g-20">
@@ -493,6 +497,9 @@ const renderTasks = () => {
                 ${!!task.subtasks.length ? '<ul id="taskSubtasksList" class="list"></ul>' : ''}
             </div>
         `);
+
+        const taskDisplayName = document.querySelectorAll("#taskDisplayName")[index];
+        taskDisplayName.innerHTML === "" ? taskDisplayName.style.display = "none" : false;
 
         if (!!task.subtasks.length) {
             const subtasksList = document.querySelectorAll("#taskSubtasksList")[index];

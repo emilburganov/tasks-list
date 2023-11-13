@@ -264,6 +264,7 @@ hr {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    margin: 20px;
 }
 
 .modal > h3 {

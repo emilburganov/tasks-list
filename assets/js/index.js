@@ -324,6 +324,8 @@ const addTask = () => {
 
     tasks.push(task);
 
+    subtasks = [];
+
     renderAddForm();
 
     sendSuccessNotification("Задача успешно создана.");
@@ -479,7 +481,7 @@ const renderTasks = () => {
                         <p>${formatTimestamp(task.timestamp)}</p>
                     </div>
                     <div class="flex ac g-20">
-                        <button data-id="${task.id}" id="updateTaskButton" class="button warning-button icon-button">
+                        <button data-id="${task.id}" id="updateTaskButton" class="button icon-button">
                            <svg width="16" height="16" viewBox="0 0 512 512">
                                <g>
                                     <path d="M405.332 256.484c-11.797 0-21.332 9.559-21.332 21.332v170.668c0 11.754-9.559 21.332-21.332 21.332H64c-11.777 0-21.332-9.578-21.332-21.332V149.816c0-11.754 9.555-21.332 21.332-21.332h170.668c11.797 0 21.332-9.558 21.332-21.332 0-11.777-9.535-21.336-21.332-21.336H64c-35.285 0-64 28.715-64 64v298.668c0 35.286 28.715 64 64 64h298.668c35.285 0 64-28.714 64-64V277.816c0-11.796-9.54-21.332-21.336-21.332zm0 0" fill="white"></path>
